@@ -1,8 +1,7 @@
-# bigDataMart
-
 #################################################################3
 #빅데이터 분석을 위한 데이터 마트 구축
 #http://cafe.naver.com/dataan
+#https://github.com/heeseonhan/bigDataMart
 #########################################################
 
 I. 분석 데이터 마트이해와 교차표                               
@@ -270,75 +269,282 @@ tmp2[!duplicated(tmp2),]
 > anyDuplicated(x)
 [1] 18
 anyDuplicated(iris)
+
 4. 두 Object가 동일한지 확인
-5. 연습문제
+> library(reshape2)
+
+> smiths
+ (m <- melt(id =1:2 , smiths ))
+ (x <- dcast (m, subject + time ~ ... ))
+identical (x, smiths )
+
+
 
 IV. 정렬 및 그룹화                                           
 1. 순위(order)와 정렬(sort) 비교 
+> vScore <- c( 30, 10, 40, 50, 20, 20, 10, 20, 50)
+> fScore <- ordered(vScore)
+> ordered(fScore)
+order(vScore)
+vScore[order(vScore)]
+
+vScore_d <- c( 30, 10, 40, 50, 20, 20, 10, 20, 50)
+
+> order(vScore_d)
+
 2. 여러 개의 정렬기준 설정 : 붓꽃 종류 데이터에 Petal.Length 속성과 
 Petal.Width 속성기준으로 정렬하기
+(iris[order(iris$Petal.Length,iris$Petal.Width), ])
+
+library(doBy)
+> orderBy(~ Sepal.Width , iris)
+orderBy(~ Species + Sepal.Width , iris)
+orderBy(~ Species + Sepal.Width+Petal.Length , iris)
+
 3. 영화 데이터 읽어와서 영화명을 기준으로 정렬하기
+ordbytable<-read.csv("D:/0-R/orderbytable.csv",header=T)
+ordedtable<-ordbytable[order(ordbytable$영화명),]
+>write.csv(ordedtable,“ordedtable.csv”)
+
 4. 붓꽃 종류 데이터에서 정렬 기준 속성 찾기
-5. 그룹화
+iris[order(iris$Sepal.Width,iris$Sepal.Length), ]
+ iris[order(iris$Petal.Length,iris$Petal.Width), ]
+pairs(iris[,1:4],col=as.integer(factor(iris$Species)))
+
+5. 그룹화 – airquality 데이터
+ library(reshape2)
+> airquality
+names(airquality) <- tolower(names(airquality))
+aqm <- melt(airquality, id=c("month", "day"), na.rm=TRUE)
+>acast(aqm, variable ~ month, mean, subset = .(variable == "ozone"))
+acast(aqm, variable ~ month, mean, subset = .(variable == "solar.r"))
+            5        6        7        8        9
+solar.r 181.2963 190.1667 216.4839 171.8571 167.4333
+
+
+# wind의 월별 평균
+> acast(aqm, variable ~ month, mean, subset = .(variable == "wind"))
+5        6        7        8     9
+wind 11.62258 10.26667 8.941935 8.793548 10.18
+
+
+# temp의 월별 평균
+> acast(aqm, variable ~ month, mean, subset = .(variable == "temp"))
+
+
 6. 그룹화 따라하기 : 팁을 가장 많이 지불한 그룹 고객 특성
-7. 동물의 몸무게 데이터에 따라  동물의 종 데이터를 정렬하기
+str(tips)
+summary(tips)
+melt(tips)
+dcast(melt(tips), sex ~ smoker, mean, subset = .(variable == "total_bill"))
+dcast(melt(tips), sex ~ smoker, mean, subset = .(variable == "tip"))
+
+
+7. 동물 몸무게데이터셋에 따라  동물 종데이터셋 정렬하기 
+>vAnimal <- c("Goat","Horse","Rabbit","Dog")
+＞vWeight <- c(60, 550, 3, 10)                  
+＞order(vWeight)
+vAnimal[order(vWeight)]
 
 
 V. 데이터 필터링                                   
 1. 데이터 타입별로 속성 추출하기
+sapply(iris,is.numeric)
+ sapply(iris,is.factor)
+sapply(iris,is.character)
+risSa<- iris[,sapply(iris,is.numeric)] 
+risSanotnum<- iris[,!(sapply(iris,is.numeric))] 
+> risSanotnum
+iris_fact<-iris[,sapply(iris,is.factor)]  
 2. 수치형 타입의 컬럼에만 추출해서 집계(summary)하기
-3. 조건과 매칭되는 첫 번째 위치탐색하기
-4. 조건에 매칭되는 케이스 추출하기
-5. 여러 개의 조건으로 일치하는 데이터 추출하기
-6. 조건에 일치하는 subset 추출하기
-7. data.table에서 조건에 적합한 케이스 추출하기
-8. 인종 level중에 백인과 흑인만 추출해서 시각화하기
-9. 두 데이터를 비교해서 존재하지 않는 항목 탐색하기
-10. 짝수 위치 탐색하기
+ lapply(chickwts, is.numeric)    
+sapply(chickwts, is.numeric)
+sapply(chickwts, mean)      
 
+3. 조건과 매칭되는 첫 번째 위치탐색하기
+>vv1<-c(10,20,30,40)
+>vX1 <- c(20,30)
+> match(vv1,vX1)
+>  vv<-c(10,20,30,20,40)
+> match(20,vv)
+dX <- data.frame(id=c(1,1,2,15), value=c(NA,NA,NA,NA))
+
+> dLookup <- data.frame(id=c(0,1,2,2,3), value=c(100,101,112,102,104))
+
+4. 조건에 매칭되는 케이스 추출하기
+which(mtcars$wt > 5 )    
+ which( mtcars$wt > 5 ,arr.ind = T)
+
+5. 여러개의 조건 설정하여 일치하는 데이터 추출하기
+ mtcars$wt>5 | mtcars$mpg<12
+which(mtcars$wt>5| mtcars$mpg<12)
+>mtcars_wt5u_mpg12d<-mtcars[mtcars$wt>5 | mtcars$mpg<12,]
+>write.csv(mtcars_wt5u_mpg12d,“파일명.csv”)
+> mtcars[mtcars$wt>5 | mtcars$mpg<12,]
+which(mtcars$wt>5 & mtcars$mpg<12)
+
+6. 조건에 일치하는 subset 추출하기
+subset(mtcars, mtcars$wt>5 | mtcars$mpg<12)
+
+
+
+7.data.table에서 조건에 적합한 케이스 추출하기
+>library(hflights)
+> str(hflights)
+> hflights_dataframe<-hflights
+> library(dplyr)
+> head(filter(hflights_dataframe, Month == 1, DayofMonth == 1))
+
+8. 인종 level중에 백인과 흑인만 추출해서 시각화하기
+>library(boot)
+>adult <- read.csv("e:/00-R/biz_08adult.data", header = FALSE, strip.white = TRUE)
+>names(adult) <- c('age', 'workclass', 'fnlwgt', 'education',
+'education_num', 'marital_status', 'occupation',
+'relationship', 'race', 'sex',
+'capital_gain', 'capital_loss',
+'hours_per_week', 'native_country',
+'wage')
+> library(tibble)
+> glimpse(adult)
+
+9. 두 데이터를 비교해서 존재하지 않는 항목 탐색하기
+vv1<-c(10,20,30,40)
+> vX1 <- c(20,30)
+> vv1%in% vX1
+
+> vv1<-c(10,20,30,40)
+> vX1 <- c(20,30)
+> !(vv1%in% vX1)
+
+
+10. 짝수 위치 탐색하기
+(1:12)%%2 == 0
+which((1:12)%%2 == 0) 
+which((1:12)%%2 == 0,arr.ind = TRUE)
 
 VI. 파생 변수                   
 1. 파생변수 이해 및 관련 함수
 2. transform()과 mutate() 비교 따라하기
+
+> data("airquality")
+> names(airquality)
+[1] "Ozone"   "Solar.R" "Wind"    "Temp"    "Month"   "Day"  
+
+> library(plyr)
+> head(mutate(airquality, Ozone = log(Ozone)))
+head(mutate(airquality, new = mean(airquality$Temp), new2 = (Temp- new) / sd(airquality$Temp)) )
+
 3. 온도와 오존값 변환하기
+airquality_derived<-mutate(airquality, ozone_log = log(Ozone), Temp_nomal = (Temp - mean(airquality$Temp)) /sd(airquality$Temp))
+
+airquality_derived_t<-transform(airquality, ozone_log = log(Ozone), Temp_nomal = (Temp - mean(airquality$Temp)) /sd(airquality$Temp))
+
 4. 비행 주행 빠르기 정도를 나타내는 파생 변수 생성하기
+library(hflights)
+> str(hflights)
+ library(dplyr)
+>  hflights_df <- tbl_df(hflights)
+> hf_df_deri<-mutate(hflights_df, Flig_Level = ArrDelay - DepDelay)
+> hf_df_deri[1:10,c(1:2,5,8,12:15,21:22)]
 5. 비율척도에서 서열척도 파생변수 생성
+vAge <- 51:80
+> table(cut(vAge, breaks=c(0,55,60,65,70,99), include.lowest=TRUE, right=FALSE))
+
+
 6. 차량 연비를 낮음, 중간, 높음로 파생변수 생성하기
+vMPG <- mtcars$mpg
+> vMPG
+> cut(vMPG, breaks=c(0,20,30,50), labels=c("low","medium","high"))
+>VMPG$cut_level<-cut(vMPG, breaks=c(0,20,30,50), labels=c("low","medium","high"))
+
 7. 야구 선수 아이디별로 데뷔 차수를 나타내는 파생 변수 생성하기
+>library(plyr)
+> head(baseball,10)
+>ball<-baseball
+
+> head (ddply(ball , .(id), mutate ,
++             debut = year - min(year) + 1, log_debut =log(debut)),10)
+
+
 8. 조건의 일치하는지 여부를 나타내는 파생변수 생성 
+> library(plyr)
+
+> ddply (iris,.( Species , Sepal.Length>5.0),
+                                     function (sub) {
+                                       data.frame ( sepal.width.mean = mean (sub$ Sepal.Width ))
+                                     })
+
+
 9. Sepal.Length 가 5.0이상이고 Species가 Setosa인지 여부로 파생변
 수 생성하기 
+> library(plyr)
+> head(adply(iris[,1:4], 1, function(x) { row_mean=rowMeans(x) }))
 
-
-VII. 병합                        
-1. 열단위로 병합
-2. 행단위로 병합
-3. Outer 조인 : 두 테이블
-4. full Outer 조인 : 두 데이터셋에 있는 값 모두 나타나게 두 데이터
-셋 합하기
-5. Left outer 조인
-6. Right outer 조인
-7. 크로스 조인
-8. Inner 조인
-9. Anti 조인
-10. 날짜를 기준으로 날씨 데이터 조인하기
-11. 영화의 순위와 영화명 두 개 속성기준으로 조인하기
 
 VIII. 리모델링   
 1. 변수명이 level이 되게 리모델링
+> mcex <- data.frame ( medicine =c("a", "b", "c"),ctl=c(5, 3, 2),exp=c(4, 5, 7))
+
+> mcex
+medicine ctl exp
+1        a   5   4
+2        b   3   5
+3        c   2   7
+
+> library(doBy)
+
+> summaryBy(values ~ ind ,stacked_mcex)
+ind values.mean
+1 ctl    3.333333
+2 exp    5.333333
+
+unstack(stacked_mcex, values ~ ind )
+
+
 2. 3점 척도로 구성된 질문 응답 데이터, 리모델링하기
+be<-read.csv("c:/00-R/behavior.csv")
+be_q_ac<-stack(be_q)
+xtabs(~values+ind,be_q_ac)
+
 3. 속성 내 값을 다른 속성 값과 일대일 대응관계로 확장하기
+require(utils)
+
+expand.grid(height = seq(60, 80, 5),              weight = seq(100, 300, 50),
++             sex = c("Male","Female"))
+
 4. 닭을 살찌우면서 안전한 닭의 모이는 무엇인가
+str(ChickWeight)
+names(ChickWeight) <- tolower(names(ChickWeight))
+library(reshape2)
+>chick_m <- melt(ChickWeight, id=2:4, na.rm=TRUE)
+dcast(chick_m, time ~ variable, mean) 
+>library(reshape2)
+>chick_m <- melt(ChickWeight, id=2:4, na.rm=TRUE)
+>dcast(chick_m, diet ~ variable, mean) 
+aggregate(ChickWeight$weight,by=list(ChickWeight$Diet),mean, na.rm=TRUE)
+>library(data.table)
+> DT_CW <- as.data.table(ChickWeight)
+> DT_CW[, mean(weight), by="Diet"]
+>names(ChickWeight) <- tolower(names(ChickWeight))
+> chick_m <- melt(ChickWeight, id=2:4, na.rm=TRUE)
+(6)  time마다의 chicks의 마리수 
+
+각 시간의 실험을 한 닭의 마리수가 몇 마리인지 확인하여 실험닭의 마리 수가 균형이 있엇는지 확인한다. acast()함수에 length를 사용한다.
+
+>names(ChickWeight) <- tolower(names(ChickWeight))
+> chick_m <- melt(ChickWeight, id=2:4, na.rm=TRUE)
+
+
+
+
+
+
 5. 영화 장르 리모델링 따라하기
-6. 연습문제
+
 
 IX. 요약변수                                 
 1. 요약 변수의 이해와 생성하기
 2. 월별로 평균을 산출
 3. 요약 값 계산시 NA 연산 불가 메세지 해결
-4. 연습문제
 
-X. 위도경도 좌표데이터 
-1. 좌표에서 읍면동 변수생성하기
-2. 주소를 좌표데이터로 변환
 
