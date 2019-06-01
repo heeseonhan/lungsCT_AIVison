@@ -1,7 +1,9 @@
 #################################################################3
-# 책제목(BOOK TIELE) : 빅데이터 분석을 위한 데이터 마트 구축
+#(BOOK TIELE) : 빅데이터 분석을 위한 데이터 마트 구축
+# (BOOK published in Korea)
 #http://cafe.naver.com/dataan
 #https://github.com/heeseonhan/bigDataMart
+
 #########################################################
 
 I. 분석 데이터 마트이해와 교차표                               
